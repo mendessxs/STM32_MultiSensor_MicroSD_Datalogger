@@ -10,6 +10,7 @@
 
 // Task Functions
 void Task_MPU6050_Read(void);
+void Task_DHT11_Read(void);
 void Task_LCD_Update(void);
 void Task_UART_Output(void);
 void Task_DS18B20_Read(void);

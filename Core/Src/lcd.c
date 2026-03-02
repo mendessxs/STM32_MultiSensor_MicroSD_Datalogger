@@ -137,6 +137,59 @@ void LCD_DisplayError(void)
 
 }
 
+void LCD_DisplayReading_Temp(uint8_t temp_int, uint8_t temp_dec, uint8_t hum_int, uint8_t hum_dec)
+{
+  // LINE 1: TEMP: XX.X C
+   LCD_SetCursor(0, 0);
+   LCD_SendString("TEMP: ");
+
+   // Format temperature: XX.X
+   if(temp_int >= 10)
+   {
+     LCD_SendData('0' + (temp_int / 10));
+     LCD_SendData('0' + (temp_int % 10));
+   }
+   else
+   {
+     LCD_SendData(' ');
+     LCD_SendData('0' + temp_int);
+   }
+
+   LCD_SendData('.');
+   LCD_SendData('0' + temp_dec);
+   LCD_SendData(' ');
+   LCD_SendData('C');
+   LCD_SendData(' ');
+   LCD_SendData(' ');
+   LCD_SendData(' ');
+   LCD_SendData(' ');
+
+   // LINE 2: HUMD: XX.X %
+   LCD_SetCursor(1, 0);
+   LCD_SendString("HUMD: ");
+
+   // Format humidity: XX.X
+   if(hum_int >= 10)
+   {
+     LCD_SendData('0' + (hum_int / 10));
+     LCD_SendData('0' + (hum_int % 10));
+   }
+   else
+   {
+     LCD_SendData(' ');
+     LCD_SendData('0' + hum_int);
+   }
+
+   LCD_SendData('.');
+   LCD_SendData('0' + hum_dec);
+   LCD_SendData(' ');
+   LCD_SendData('%');
+   LCD_SendData(' ');
+   LCD_SendData(' ');
+   LCD_SendData(' ');
+   LCD_SendData(' ');
+ }
+
 // Display temperature
 void LCD_DisplayReading(float temp_ds18b20, float temp_mpu6050)
 {

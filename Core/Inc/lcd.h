@@ -30,6 +30,7 @@ void LCD_DisplayAccel(int16_t ax, int16_t ay, int16_t az);
 
 // Functions to display scaled values
 void LCD_DisplayReading(float temp_ds18b20, float temp_mpu6050);
+void LCD_DisplayReading_Temp(uint8_t temp_int, uint8_t temp_dec, uint8_t hum_int, uint8_t hum_dec);
 void LCD_DisplayFloat(float value, uint8_t decimal_places);
 void LCD_DisplayAccelScaled(float ax, float ay, float az);
 void LCD_DisplayGyroScaled(float gx, float gy, float gz);

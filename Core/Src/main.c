@@ -32,6 +32,7 @@
 #include "utils.h"
 #include "dwt.h"
 #include "ds18b20.h"
+#include "dht11.h"
 #include "spi1.h"
 #include "sd_functions.h"
 /* USER CODE END Includes */
@@ -50,6 +51,7 @@
 /* USER CODE BEGIN PM */
 
 #define DS18B20_READ_TICKS  100
+#define DHT11_READ_TICKS  100
 #define MPU_READ_TICKS      5
 #define LCD_UPDATE_TICKS    10
 #define UART_UPDATE_TICKS   10
@@ -116,6 +118,7 @@ int main(void)
   // Initialize ALL modules
   TIMER2_Init();
   USART1_Init();
+  DHT11_Init();
   I2C2_Init();
   LCD_Init();
   MPU6050_Init();
@@ -125,6 +128,7 @@ int main(void)
   SPI1_Init();
 
   // Loop counters
+  uint8_t dht_count = 0;
   uint8_t ds18b20_count = 0;
   uint8_t mpu_count = 0;
   uint8_t lcd_count = 0;
@@ -158,6 +162,13 @@ int main(void)
     {
       Task_DS18B20_Read();
       ds18b20_count = 0;
+    }
+
+    // DHT11 every 1 seconds
+    if(dht_count++ >= DHT11_READ_TICKS)
+    {
+      Task_DHT11_Read();
+      dht_count = 0;
     }
 
     // Read MPU6050 every 50ms

@@ -118,6 +118,51 @@ void format_value(uint8_t integer, uint8_t decimal, char *buffer, char unit)
   *ptr = '\0';
 }
 
+void format_reading_temp(uint8_t temp_int, uint8_t temp_dec, uint8_t hum_int, uint8_t hum_dec, char *buffer)
+{
+  char *ptr = buffer;
+  char temp[8];
+  uint8_t i;
+
+  // Add "Temp: "
+  *ptr++ = 'T';
+  *ptr++ = 'e';
+  *ptr++ = 'm';
+  *ptr++ = 'p';
+  *ptr++ = ':';
+  *ptr++ = ' ';
+
+  // Format temperature
+  format_value(temp_int, temp_dec, temp, 'C');
+  i = 0;
+  while(temp[i])
+  {
+    *ptr++ = temp[i++];
+  }
+
+  // Add ", Hum: "
+  *ptr++ = ',';
+  *ptr++ = ' ';
+  *ptr++ = 'H';
+  *ptr++ = 'u';
+  *ptr++ = 'm';
+  *ptr++ = ':';
+  *ptr++ = ' ';
+
+  // Format humidity
+  format_value(hum_int, hum_dec, temp, '%');
+  i = 0;
+  while(temp[i])
+  {
+    *ptr++ = temp[i++];
+  }
+
+  // Add newline
+  *ptr++ = '\r';
+  *ptr++ = '\n';
+  *ptr = '\0';
+}
+
 void format_reading(float temp_ds18b20, float temp_mpu6050, char *buffer)
 {
   char *ptr = buffer;

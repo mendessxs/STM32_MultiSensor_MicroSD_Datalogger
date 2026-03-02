@@ -14,6 +14,15 @@
 #include "i2c2.h"
 #include "lcd.h"
 #include "ds18b20.h"
+#include "dht11.h"
+
+#define MAX_RETRIES 5
+
+// Global variables to store DHT11 data
+volatile uint8_t dht11_humidity = 0;
+volatile uint8_t dht11_humidity2 = 0;
+volatile uint8_t dht11_temperature = 0;
+volatile uint8_t dht11_temperature2 = 0;
 
 static char uart_buf[32];
 
@@ -76,6 +85,45 @@ void Task_Feedback_Update(void)
   }
 }
 
+void Task_DHT11_Read(void)
+{
+  uint8_t hum1, hum2, temp1, temp2, checksum;
+
+  // Disable interrupts for critical section
+  uint32_t primask = __get_PRIMASK();
+  __disable_irq();
+
+  // Try up to MAX_RETRIES times
+  for(int retry = 0; retry < MAX_RETRIES; retry++)
+  {
+    DHT11_Start();
+
+    if(DHT11_Check_Response())
+    {
+      hum1 = DHT11_Read();
+      hum2 = DHT11_Read();
+      temp1 = DHT11_Read();
+      temp2 = DHT11_Read();
+      checksum = DHT11_Read();
+
+      uint8_t calc = hum1 + hum2 + temp1 + temp2;
+
+      if(calc == checksum)
+      {
+        dht11_humidity = hum1;
+        dht11_humidity2 = hum2;
+        dht11_temperature = temp1;
+        dht11_temperature2 = temp2;
+        break;
+      }
+    }
+    TIMER2_Delay_ms(1);
+  }
+
+  // Re-enable interrupts
+  __set_PRIMASK(primask);
+}
+
 // Task to update UART output
 void Task_UART_Output(void)
 {
@@ -84,6 +132,10 @@ void Task_UART_Output(void)
   switch(mode)
   {
     case DISPLAY_MODE_TEMP_HUM:
+      format_reading_temp(dht11_temperature, dht11_temperature2, dht11_humidity, dht11_humidity2, uart_buf);
+      break;
+
+    case DISPLAY_MODE_TEMP:
       format_reading(ds18b20_data.temperature, mpu6050_scaled.temp, uart_buf);
       break;
 
@@ -141,6 +193,10 @@ void Task_LCD_Update(void)
   switch(mode)
   {
     case DISPLAY_MODE_TEMP_HUM:
+      LCD_DisplayReading_Temp(dht11_temperature, dht11_temperature2, dht11_humidity, dht11_humidity2);
+      break;
+
+    case DISPLAY_MODE_TEMP:
       LCD_DisplayReading(ds18b20_data.temperature, mpu6050_scaled.temp);
       break;
 

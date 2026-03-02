@@ -12,6 +12,7 @@
 typedef enum
 {
   DISPLAY_MODE_TEMP_HUM = 0,  // DHT11 temperature and humidity
+  DISPLAY_MODE_TEMP,
   DISPLAY_MODE_ACCEL,         // MPU6050 accelerometer
   DISPLAY_MODE_GYRO,          // MPU6050 gyroscope
   DISPLAY_MODE_COUNT
