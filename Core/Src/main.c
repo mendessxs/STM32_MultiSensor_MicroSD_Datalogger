@@ -29,10 +29,12 @@
 #include "timer2.h"
 #include "timer3.h"
 #include "uart.h"
+#include "spi1.h"
 #include "utils.h"
 #include "dwt.h"
 #include "ds18b20.h"
 #include "dht11.h"
+#include "sd_functions.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +51,7 @@
 /* USER CODE BEGIN PM */
 
 #define DS18B20_READ_TICKS  100
-#define DHT11_READ_TICKS  100
+#define DHT11_READ_TICKS    100
 #define MPU_READ_TICKS      5
 #define LCD_UPDATE_TICKS    10
 #define UART_UPDATE_TICKS   10
@@ -76,7 +78,62 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void SD_Test(void)
+{
+  // Try to mount the SD card
+  if(sd_mount() == FR_OK)
+  {
+    USART1_SendString("SD Card mounted successfully!\r\n");
 
+    // Write a test file
+//    if(sd_write_file("test.txt", "SD Card is working!\r\n") == FR_OK)
+//    {
+//      USART1_SendString("File write successful!\r\n");
+//    }
+
+    char read_buffer[64];
+    UINT bytes_read;
+
+    int read_result = sd_read_file("test.txt", read_buffer, sizeof(read_buffer), &bytes_read);
+
+    if(read_result == FR_OK)
+    {
+      USART1_SendString("File Content: ");
+      USART1_SendString(read_buffer);
+      USART1_SendString("\r\n");
+    }
+    else
+    {
+      USART1_SendString("Read failed with code: ");
+      USART1_SendNumber(read_result);
+      USART1_SendString("\r\n");
+    }
+
+    FIL test_file;
+    FRESULT check_res = f_open(&test_file, "test.txt", FA_READ);
+    if(check_res == FR_OK)
+    {
+      USART1_SendString("File exists and can be opened\r\n");
+      f_close(&test_file);
+    }
+    else
+    {
+      USART1_SendString("File check failed with code: ");
+      USART1_SendNumber(check_res);
+      USART1_SendString("\r\n");
+    }
+
+    // List all files on the card
+    // sd_list_files();
+
+    // Unmount safely
+    sd_unmount();
+  }
+  else
+  {
+    USART1_SendString("SD Card mount FAILED!\r\n");
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -110,7 +167,6 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_SPI1_Init();
-
   /* USER CODE BEGIN 2 */
 
   // Initialize ALL modules
@@ -123,6 +179,7 @@ int main(void)
   TIMER4_Init();
   DWT_Init();
   DS18B20_Init();
+  // SPI1_Init();
 
   // Loop counters
   uint8_t dht_count = 0;
@@ -137,6 +194,13 @@ int main(void)
   LCD_SendString("INITIALIZING...");
 
   DWT_Delay_ms(2000);
+
+  SD_Test();
+
+  LCD_Clear();
+  LCD_SendString("SD CARD TEST");
+  LCD_SetCursor(1, 0);
+  LCD_SendString("DONE - CHECK UART");
 
   Button_Init();
 
@@ -185,7 +249,7 @@ int main(void)
     // Update UART output every 100ms
     if(uart_count++ >= UART_UPDATE_TICKS)
     {
-      Task_UART_Output();
+      // Task_UART_Output();
       uart_count = 0;
     }
 

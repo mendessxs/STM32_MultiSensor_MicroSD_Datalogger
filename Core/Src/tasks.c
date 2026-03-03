@@ -38,7 +38,7 @@ typedef struct
 static Feedback_t feedback = {0};
 
 // Show a message on LCD for specified duration
-static void Feedback_Show(const char *line1, const char *line2, uint16_t duration_ms)
+/*static void Feedback_Show(const char *line1, const char *line2, uint16_t duration_ms)
 {
   // Copy line1
   int i = 0;
@@ -68,7 +68,7 @@ static void Feedback_Show(const char *line1, const char *line2, uint16_t duratio
   LCD_SendString(feedback.line1);
   LCD_SetCursor(1, 0);
   LCD_SendString(feedback.line2);
-}
+}*/
 
 // Check if feedback time has expired
 void Task_Feedback_Update(void)
