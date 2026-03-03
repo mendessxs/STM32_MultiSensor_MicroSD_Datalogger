@@ -53,6 +53,7 @@
 
 #define DS18B20_READ_TICKS  100
 #define DHT11_READ_TICKS    100
+#define SDCARD_SAVE_TICKS   500
 #define MPU_READ_TICKS      5
 #define LCD_UPDATE_TICKS    10
 #define UART_UPDATE_TICKS   10
@@ -127,11 +128,12 @@ int main(void)
   DS18B20_Init();
 
   // Loop counters
-  uint8_t dht_count = 0;
-  uint8_t ds18b20_count = 0;
-  uint8_t mpu_count = 0;
-  uint8_t lcd_count = 0;
-  uint8_t uart_count = 0;
+  uint16_t dht_count = 0;
+  uint16_t ds18b20_count = 0;
+  uint16_t mpu_count = 0;
+  uint16_t lcd_count = 0;
+  uint16_t uart_count = 0;
+  uint16_t sdcard_count = 0;
 
   LCD_Clear();
   LCD_SendString("STM32 PROJECT");
@@ -218,6 +220,13 @@ int main(void)
     {
       // Task_UART_Output();
       uart_count = 0;
+    }
+
+    // Save data every 5 seconds
+    if(sdcard_count++ >= SDCARD_SAVE_TICKS)  // 500 * 10ms = 5 seconds
+    {
+      //Task_SD_DataLogger();
+      sdcard_count = 0;
     }
 
     TIMER3_WaitPeriod(); // Heart Beat time check

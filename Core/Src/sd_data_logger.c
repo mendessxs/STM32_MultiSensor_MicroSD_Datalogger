@@ -15,7 +15,7 @@
 #include "utils.h"
 #include "tasks.h"
 
-#define CSV_FILENAME        "sensor_data.csv"
+#define CSV_FILENAME        "test_data.csv"
 #define CSV_HEADER          "Entry,DS18B20_C,MPU6050_C,DHT11_C,DHT11_%,AX_g,AY_g,AZ_g,GX_dps,GY_dps,GZ_dps\r\n"
 #define MAX_LINE_LENGTH     128
 
@@ -439,14 +439,22 @@ uint32_t SD_DataLogger_GetEntryCount(void)
 // Periodic task to log data (call this in main loop)
 void Task_SD_DataLogger(void)
 {
+  USART1_SendString("Task_SD_DataLogger called\r\n");  // DEBUG
   if(!initialized)
+  {
+    USART1_SendString("Not initialized!\r\n");  // DEBUG
     return;
+  }
 
   if(SD_DataLogger_SaveEntry() == SD_LOGGER_OK)
   {
     USART1_SendString("Logged entry #");
     USART1_SendNumber(entry_count);
     USART1_SendString("\r\n");
+  }
+  else
+  {
+    USART1_SendString("Save FAILED!\r\n");  // DEBUG
   }
 }
 
