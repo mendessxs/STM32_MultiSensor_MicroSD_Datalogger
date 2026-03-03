@@ -7,6 +7,7 @@
 
 #include "stm32f103xb.h"
 #include "timer2.h"
+#include "sd_spi.h"
 
 // CS Pin control
 #define SD_CS_LOW()     (GPIOB->BRR = GPIO_BRR_BR6)   // Reset PB6 (CS low)
@@ -17,7 +18,7 @@ static volatile uint8_t dma_tx_complete = 0;
 static volatile uint8_t dma_rx_complete = 0;
 
 static uint8_t sdhc = 0;
-static uint8_t card_initialized = 0;
+uint8_t card_initialized = 0;
 
 // DMA channel2 (RX) IRQ handler
 void DMA1_Channel2_IRQHandler(void)
@@ -81,7 +82,7 @@ static void SPI_TransmitBuffer_DMA(const uint8_t *buffer, uint16_t len)
   dma_tx_complete = 0;
 
   // Disable DMA channel for configuration
-  DMA1_Channel3->CCR &= ~DMA_CCR1_EN;
+  DMA1_Channel3->CCR &= ~DMA_CCR_EN;
 
   // Configure DMA for SPI1 TX
   DMA1_Channel3->CPAR = (uint32_t) &SPI1->DR;     // Peripheral address
@@ -89,18 +90,18 @@ static void SPI_TransmitBuffer_DMA(const uint8_t *buffer, uint16_t len)
   DMA1_Channel3->CNDTR = len;                     // Number of bytes
 
   // Configure: Memory-to-peripheral, 8-bit, increment memory, priority medium
-  DMA1_Channel3->CCR = DMA_CCR3_DIR |       // Memory to peripheral
-      DMA_CCR3_MINC |             // Memory increment
-      DMA_CCR3_PSIZE_0 |          // Peripheral size 8-bit
-      DMA_CCR3_MSIZE_0 |          // Memory size 8-bit
-      DMA_CCR3_PL_0 |             // Priority medium
-      DMA_CCR3_TCIE;              // Enable transfer complete interrupt
+  DMA1_Channel3->CCR = DMA_CCR_DIR |       // Memory to peripheral
+      DMA_CCR_MINC |             // Memory increment
+      DMA_CCR_PSIZE_0 |          // Peripheral size 8-bit
+      DMA_CCR_MSIZE_0 |          // Memory size 8-bit
+      DMA_CCR_PL_0 |             // Priority medium
+      DMA_CCR_TCIE;              // Enable transfer complete interrupt
 
   // Enable SPI TX DMA
   SPI1->CR2 |= SPI_CR2_TXDMAEN;
 
   // Enable DMA channel
-  DMA1_Channel3->CCR |= DMA_CCR1_EN;
+  DMA1_Channel3->CCR |= DMA_CCR_EN;
 
   // Wait for DMA completion
   uint32_t timeout = TIMER2_GetMillis() + 1000;
@@ -113,7 +114,7 @@ static void SPI_TransmitBuffer_DMA(const uint8_t *buffer, uint16_t len)
   SPI_WaitForNotBusy();
 
   // Disable DMA channel
-  DMA1_Channel3->CCR &= ~DMA_CCR1_EN;
+  DMA1_Channel3->CCR &= ~DMA_CCR_EN;
 }
 
 static void SPI_ReceiveBuffer_DMA(uint8_t *buffer, uint16_t len)
@@ -131,8 +132,8 @@ static void SPI_ReceiveBuffer_DMA(uint8_t *buffer, uint16_t len)
   dma_rx_complete = 0;
 
   // Disable DMA channels for configuration
-  DMA1_Channel2->CCR &= ~DMA_CCR1_EN;
-  DMA1_Channel3->CCR &= ~DMA_CCR1_EN;
+  DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+  DMA1_Channel3->CCR &= ~DMA_CCR_EN;
 
   // Configure RX DMA
   DMA1_Channel2->CPAR = (uint32_t) &SPI1->DR;      // Peripheral address
@@ -140,11 +141,11 @@ static void SPI_ReceiveBuffer_DMA(uint8_t *buffer, uint16_t len)
   DMA1_Channel2->CNDTR = len;                      // Number of bytes
 
   // Configure RX: Peripheral-to-memory, 8-bit, increment memory, priority medium
-  DMA1_Channel2->CCR = DMA_CCR2_MINC |             // Memory increment
-      DMA_CCR2_PSIZE_0 |            // Peripheral size 8-bit
-      DMA_CCR2_MSIZE_0 |            // Memory size 8-bit
-      DMA_CCR2_PL_0 |               // Priority medium
-      DMA_CCR2_TCIE;                // Enable transfer complete interrupt
+  DMA1_Channel2->CCR = DMA_CCR_MINC |             // Memory increment
+      DMA_CCR_PSIZE_0 |            // Peripheral size 8-bit
+      DMA_CCR_MSIZE_0 |            // Memory size 8-bit
+      DMA_CCR_PL_0 |               // Priority medium
+      DMA_CCR_TCIE;                // Enable transfer complete interrupt
 
   // Configure TX DMA for dummy data
   DMA1_Channel3->CPAR = (uint32_t) &SPI1->DR;       // Peripheral address
@@ -152,18 +153,18 @@ static void SPI_ReceiveBuffer_DMA(uint8_t *buffer, uint16_t len)
   DMA1_Channel3->CNDTR = len;                       // Number of bytes
 
   // Configure TX: Memory-to-peripheral, 8-bit, increment memory, priority medium
-  DMA1_Channel3->CCR = DMA_CCR3_DIR |              // Memory to peripheral
-      DMA_CCR3_MINC |               // Memory increment
-      DMA_CCR3_PSIZE_0 |            // Peripheral size 8-bit
-      DMA_CCR3_MSIZE_0 |            // Memory size 8-bit
-      DMA_CCR3_PL_0;                // Priority medium
+  DMA1_Channel3->CCR = DMA_CCR_DIR |              // Memory to peripheral
+      DMA_CCR_MINC |               // Memory increment
+      DMA_CCR_PSIZE_0 |            // Peripheral size 8-bit
+      DMA_CCR_MSIZE_0 |            // Memory size 8-bit
+      DMA_CCR_PL_0;                // Priority medium
 
   // Enable both RX and TX DMA in SPI
   SPI1->CR2 |= SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN;
 
   // Enable DMA channels (RX first, then TX)
-  DMA1_Channel2->CCR |= DMA_CCR1_EN;
-  DMA1_Channel3->CCR |= DMA_CCR1_EN;
+  DMA1_Channel2->CCR |= DMA_CCR_EN;
+  DMA1_Channel3->CCR |= DMA_CCR_EN;
 
   // Wait for RX completion
   uint32_t timeout = TIMER2_GetMillis() + 1000;
@@ -171,8 +172,8 @@ static void SPI_ReceiveBuffer_DMA(uint8_t *buffer, uint16_t len)
 
   // Disable DMA
   SPI1->CR2 &= ~(SPI_CR2_RXDMAEN | SPI_CR2_TXDMAEN);
-  DMA1_Channel2->CCR &= ~DMA_CCR1_EN;
-  DMA1_Channel3->CCR &= ~DMA_CCR1_EN;
+  DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+  DMA1_Channel3->CCR &= ~DMA_CCR_EN;
 }
 
 static uint8_t SD_WaitReady(void)
@@ -520,3 +521,28 @@ uint8_t SD_IsInitialized(void)
 {
   return card_initialized;
 }
+
+SD_Status SD_ReadBlocks(uint8_t *buff, uint32_t sector, uint32_t count)
+{
+  if(count == 1)
+  {
+    return SD_ReadSingleBlock(buff, sector);
+  }
+  else
+  {
+    return SD_ReadMultiBlocks(buff, sector, count);
+  }
+}
+
+SD_Status SD_WriteBlocks(const uint8_t *buff, uint32_t sector, uint32_t count)
+{
+  if(count == 1)
+  {
+    return SD_WriteSingleBlock(buff, sector);
+  }
+  else
+  {
+    return SD_WriteMultiBlocks(buff, sector, count);
+  }
+}
+

@@ -19,6 +19,8 @@ typedef enum
   SD_INIT_ERROR = 3
 } SD_Status;
 
+extern uint8_t card_initialized;
+
 // Initialize SD card
 SD_Status SD_Init(void);
 
@@ -35,5 +37,8 @@ SD_Status SD_WriteMultiBlocks(const uint8_t *buff, uint32_t sector, uint32_t cou
 
 // Card status
 uint8_t SD_IsInitialized(void);
+
+SD_Status SD_ReadBlocks(uint8_t *buff, uint32_t sector, uint32_t count);
+SD_Status SD_WriteBlocks(const uint8_t *buff, uint32_t sector, uint32_t count);
 
 #endif /* INC_SD_SPI_H_ */

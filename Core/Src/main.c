@@ -33,7 +33,6 @@
 #include "dwt.h"
 #include "ds18b20.h"
 #include "dht11.h"
-#include "sd_functions.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
