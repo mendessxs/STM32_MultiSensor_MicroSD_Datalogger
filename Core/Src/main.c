@@ -33,7 +33,6 @@
 #include "dwt.h"
 #include "ds18b20.h"
 #include "dht11.h"
-#include "spi1.h"
 #include "sd_functions.h"
 /* USER CODE END Includes */
 
@@ -125,7 +124,6 @@ int main(void)
   TIMER4_Init();
   DWT_Init();
   DS18B20_Init();
-  SPI1_Init();
 
   // Loop counters
   uint8_t dht_count = 0;
