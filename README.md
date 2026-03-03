@@ -1,7 +1,7 @@
 # STM32 Multi Sensor MicroSD FatFs Datalogger Project
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![STM32](https://img.shields.io/badge/STM32-F103C8T6-blue)
+[![STM32](https://img.shields.io/badge/STM32-F103C8T6-blue)](https://www.st.com/en/microcontrollers-microprocessors/stm32f103c8.html)
 ![CubeIDE](https://img.shields.io/badge/IDE-STM32CubeIDE-darkblue)
 
 ## Video Demonstrations

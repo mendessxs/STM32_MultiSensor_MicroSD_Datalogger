@@ -39,36 +39,36 @@ static Feedback_t feedback = {0};
 
 // Show a message on LCD for specified duration
 /*static void Feedback_Show(const char *line1, const char *line2, uint16_t duration_ms)
-{
-  // Copy line1
-  int i = 0;
-  while(line1[i] && i < 15)
-  {
-    feedback.line1[i] = line1[i];
-    i++;
-  }
-  feedback.line1[i] = '\0';
+ {
+ // Copy line1
+ int i = 0;
+ while(line1[i] && i < 15)
+ {
+ feedback.line1[i] = line1[i];
+ i++;
+ }
+ feedback.line1[i] = '\0';
 
-  // Copy line2
-  i = 0;
-  while(line2[i] && i < 15)
-  {
-    feedback.line2[i] = line2[i];
-    i++;
-  }
-  feedback.line2[i] = '\0';
+ // Copy line2
+ i = 0;
+ while(line2[i] && i < 15)
+ {
+ feedback.line2[i] = line2[i];
+ i++;
+ }
+ feedback.line2[i] = '\0';
 
-  // Calculate end time
-  feedback.end_time = TIMER2_GetMillis() + duration_ms;
-  feedback.active = 1;
+ // Calculate end time
+ feedback.end_time = TIMER2_GetMillis() + duration_ms;
+ feedback.active = 1;
 
-  // Show immediately on LCD
-  LCD_Clear();
-  LCD_SetCursor(0, 0);
-  LCD_SendString(feedback.line1);
-  LCD_SetCursor(1, 0);
-  LCD_SendString(feedback.line2);
-}*/
+ // Show immediately on LCD
+ LCD_Clear();
+ LCD_SetCursor(0, 0);
+ LCD_SendString(feedback.line1);
+ LCD_SetCursor(1, 0);
+ LCD_SendString(feedback.line2);
+ }*/
 
 // Check if feedback time has expired
 void Task_Feedback_Update(void)
