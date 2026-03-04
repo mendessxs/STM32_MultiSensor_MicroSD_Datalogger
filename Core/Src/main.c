@@ -36,6 +36,7 @@
 #include "sd_functions.h"
 #include "sd_data_logger.h"
 #include "sd_spi.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +51,6 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 #define DS18B20_READ_TICKS  100
 #define DHT11_READ_TICKS    100
 #define SDCARD_SAVE_TICKS   500
@@ -129,11 +129,11 @@ int main(void)
 
   // Loop counters
   uint16_t dht_count = 0;
-  uint16_t ds18b20_count = 0;
   uint16_t mpu_count = 0;
   uint16_t lcd_count = 0;
   uint16_t uart_count = 0;
   uint16_t sdcard_count = 0;
+  uint16_t ds18b20_count = 0;
 
   LCD_Clear();
   LCD_SendString("STM32 PROJECT");
@@ -171,7 +171,8 @@ int main(void)
   }
 
   DWT_Delay_ms(2000);
-  Button_Init();
+
+  Button_Init(); // Initialize button after all system init
 
   // Setup TIM3 for 10ms control loop
   TIMER3_SetupPeriod(10);  // 10ms period
@@ -186,6 +187,12 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+    // Check buttons status
+    Task_Button_Status();
+
+    // Update feedback timer
+    Task_Feedback_Update();
+
     // Run tasks at different rates
     // Read DS18B20 every 1 seconds
     if(ds18b20_count++ >= DS18B20_READ_TICKS)
@@ -194,7 +201,7 @@ int main(void)
       ds18b20_count = 0;
     }
 
-    // DHT11 every 1 seconds
+    // Read DHT11 every 1 seconds
     if(dht_count++ >= DHT11_READ_TICKS)
     {
       Task_DHT11_Read();
@@ -225,7 +232,7 @@ int main(void)
     // Save data every 5 seconds
     if(sdcard_count++ >= SDCARD_SAVE_TICKS)  // 500 * 10ms = 5 seconds
     {
-      //Task_SD_DataLogger();
+      // Task_SD_DataLogger();
       sdcard_count = 0;
     }
 

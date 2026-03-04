@@ -16,6 +16,8 @@
 #define SD_LOGGER_UNINIT    2
 #define SD_LOGGER_BUSY      3
 
+extern uint32_t entry_count;
+
 // Initialize the SD data logger
 uint8_t SD_DataLogger_Init(void);
 

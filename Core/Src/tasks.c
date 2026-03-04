@@ -15,6 +15,7 @@
 #include "lcd.h"
 #include "ds18b20.h"
 #include "dht11.h"
+#include "sd_data_logger.h"
 
 #define MAX_RETRIES 5
 
@@ -38,37 +39,37 @@ typedef struct
 static Feedback_t feedback = {0};
 
 // Show a message on LCD for specified duration
-/*static void Feedback_Show(const char *line1, const char *line2, uint16_t duration_ms)
- {
- // Copy line1
- int i = 0;
- while(line1[i] && i < 15)
- {
- feedback.line1[i] = line1[i];
- i++;
- }
- feedback.line1[i] = '\0';
+static void Feedback_Show(const char *line1, const char *line2, uint16_t duration_ms)
+{
+  // Copy line1
+  int i = 0;
+  while(line1[i] && i < 15)
+  {
+    feedback.line1[i] = line1[i];
+    i++;
+  }
+  feedback.line1[i] = '\0';
 
- // Copy line2
- i = 0;
- while(line2[i] && i < 15)
- {
- feedback.line2[i] = line2[i];
- i++;
- }
- feedback.line2[i] = '\0';
+  // Copy line2
+  i = 0;
+  while(line2[i] && i < 15)
+  {
+    feedback.line2[i] = line2[i];
+    i++;
+  }
+  feedback.line2[i] = '\0';
 
- // Calculate end time
- feedback.end_time = TIMER2_GetMillis() + duration_ms;
- feedback.active = 1;
+  // Calculate end time
+  feedback.end_time = TIMER2_GetMillis() + duration_ms;
+  feedback.active = 1;
 
- // Show immediately on LCD
- LCD_Clear();
- LCD_SetCursor(0, 0);
- LCD_SendString(feedback.line1);
- LCD_SetCursor(1, 0);
- LCD_SendString(feedback.line2);
- }*/
+  // Show immediately on LCD
+  LCD_Clear();
+  LCD_SetCursor(0, 0);
+  LCD_SendString(feedback.line1);
+  LCD_SetCursor(1, 0);
+  LCD_SendString(feedback.line2);
+}
 
 // Check if feedback time has expired
 void Task_Feedback_Update(void)
@@ -211,4 +212,71 @@ void Task_LCD_Update(void)
     default:  // Handles DISPLAY_MODE_COUNT and any invalid values
       break;
   }
+}
+
+void Task_Button_Status(void)
+{
+  // Button 2 - SAVE data
+  if(g_button2_pressed)
+  {
+    if(SD_DataLogger_SaveEntry() == SD_LOGGER_OK)
+    {
+      USART1_SendString("Logged entry #");
+      USART1_SendNumber(entry_count);
+      USART1_SendString("\r\n");
+
+      char line2[16] = "ENTRY #";
+      char num_str[6];
+      itoa_32(SD_DataLogger_GetEntryCount(), num_str);
+
+      // Find the end of "ENTRY #" to append number
+      uint8_t i = 6; // length of "ENTRY #"
+      uint8_t j = 0;
+      while(num_str[j] && i < 15)
+      {
+        line2[i++] = num_str[j++];
+      }
+      line2[i] = '\0';
+
+      Feedback_Show("SAVED !!!", line2, 1000);
+
+    }
+    else
+    {
+      USART1_SendString("Save FAILED!\r\n");  // DEBUG
+      Feedback_Show("ERROR!", "SAVE FAILED", 1000);
+    }
+
+    g_button2_pressed = 0;
+  }
+
+  /*  // Button 3 - READ data
+   if(g_button3_pressed)
+   {
+   uint32_t count = DataLogger_ReadAll();
+
+   if(count > 0)
+   {
+   char line2[16] = "ENTRIES #";
+   char num_str[6];
+   itoa_32(DataLogger_GetEntryCount(), num_str);
+
+   // Find the end of "ENTRY #" to append number
+   uint8_t i = 8; // length of "ENTRY #"
+   uint8_t j = 0;
+   while(num_str[j] && i < 15)
+   {
+   line2[i++] = num_str[j++];
+   }
+   line2[i] = '\0';
+
+   Feedback_Show("READ DONE !!!", line2, 1000);
+   }
+   else
+   {
+   Feedback_Show("NO DATA !!!", "SAVE DATA FIRST", 1000);
+   }
+
+   g_button3_pressed = 0;
+   }*/
 }

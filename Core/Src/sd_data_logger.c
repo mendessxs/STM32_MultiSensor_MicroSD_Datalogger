@@ -20,7 +20,7 @@
 #define MAX_LINE_LENGTH     128
 
 static uint8_t initialized = 0;
-static uint32_t entry_count = 0;
+uint32_t entry_count = 0;
 
 // Structure to track logger state
 static struct
