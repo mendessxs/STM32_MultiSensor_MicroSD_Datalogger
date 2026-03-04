@@ -3,16 +3,52 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 [![STM32](https://img.shields.io/badge/STM32-F103C8T6-blue)](https://www.st.com/en/microcontrollers-microprocessors/stm32f103c8.html)
 [![CubeIDE](https://img.shields.io/badge/IDE-STM32CubeIDE-darkblue)](http://st.com/en/development-tools/stm32cubeide.html)
+[![FatFS](https://img.shields.io/badge/FatFS-R0.15-green)](http://elm-chan.org/fsw/ff/00index_e.html)
+
+## Project Overview
+
+The **STM32 Multi Sensor MicroSD Datalogger** Project is a comprehensive embedded system that reads data from multiple sensors and logs it to a `MicroSD card` in `CSV` format. The system features real-time display on a `16x2 LCD`, user interaction via push buttons, and data retrieval over UART serial communication.
+
+The system reads data from multiple sensors:
+- **DS18B20**: Digital temperature sensor (1-Wire)
+- **DHT11**: Temperature and humidity sensor (1-Wire protocol)
+- **MPU6050**: 6-axis accelerometer, gyroscope, and temperature sensor (I2C)
+
+The data acquired from these sensors are saved into a MicroSD card in a file named `saved_sensor_data.csv` in CSV format using the `FatFS` file system.
+
+The data can be saved using a press of a button and retrieved and viewed through UART in a serial terminal in formatted table output. The data is also saved automatically every 5 seconds (currently disabled for demonstration purposes as button-based saving is easier to showcase).
+
+The main control loop runs at a timing of 10ms, demonstrating real-time control and task scheduling without using an RTOS.
+
+This project really demonstrates the combination of multiple embedded concepts: sensor data acquisition, data storage, real-time control, and task scheduling through a control loop.
 
 ## Video Demonstrations
 
+**Button 1 – Display Mode Switching**
+
 https://github.com/user-attachments/assets/6d35bd0c-daca-4b2e-b4b6-75815050c1f4
+
+Pressing Button 1 cycles through four LCD display modes: DHT11 Temp/Hum → DS18B20 + MPU6050 Temp → Accelerometer → Gyroscope
+
+**Button 2 & 3 – Save & Retrieve Data**
 
 https://github.com/user-attachments/assets/e8b59623-2705-426f-be46-1be9d1364807
 
+Button 2 saves sensor data to MicroSD card. Button 3 retrieves all stored data and sends via UART.
+
+Both buttons have a 1-second cooldown to prevent accidental multiple presses and allow time for data to be saved.
+
+**Data Persistence – After Reset**
+
 https://github.com/user-attachments/assets/8e4eb409-ab87-4282-be4d-3cabdc085a2d
 
+Data persists in the SD card even after reset. The CSV file is found and data is read correctly.
+
+**UART Output Format**  
+
 https://github.com/user-attachments/assets/a17e9b4f-a549-4912-be80-437c818b989c
+
+HTerm output showing formatted table.
 
 ## Hardware Components
 
@@ -23,6 +59,8 @@ https://github.com/user-attachments/assets/a17e9b4f-a549-4912-be80-437c818b989c
 | **DS18B20** | 1 | Digital temperature sensor (1-Wire protocol, ±0.5°C accuracy) |
 | **MPU6050** | 1 | 6-axis inertial measurement unit (accelerometer + gyroscope + temperature) |
 | **LCD 16x2 with I2C** | 1 | Character display module with I2C backpack (PCF8574) |
+| **MicroSD Card Adapter** | 1 | SPI interface module for SD card |
+| **MicroSD Card** | 1 | Storage media (FAT32 formatted, up to 32GB supported) |
 | **Push Buttons** | 3 | Two-leg tactile switches for user input |
 | **USB-to-Serial Converter** | 1 | CP2102 / CH340 / FTDI for UART communication and debugging |
 
@@ -44,11 +82,19 @@ https://github.com/user-attachments/assets/a17e9b4f-a549-4912-be80-437c818b989c
 | | PB11 | SDA | I2C2 data (shared with MPU6050) |
 | | 5V | VCC | Power |
 | | GND | GND | Common ground |
+| **MicroSD Card Adapter** | PB3 | SCK | SPI1 Clock |
+| | PB4 | MISO | SPI1 Master In Slave Out |
+| | PB5 | MOSI | SPI1 Master Out Slave In |
+| | PB6 | CS | Chip Select |
+| | 3.3V | VCC | Power |
+| | GND | GND | Common ground |
 | **UART** | PA9 | TX to USB-Serial RX | 115200 baud, 8-N-1 |
 | | PA10 | RX to USB-Serial TX | Optional for commands |
 | **Button 1** | PA0 | Mode select | Input with internal pull-up |
 | **Button 2** | PA1 | Save Data | Input with internal pull-up |
 | **Button 3** | PA2 | Read Data | Input with internal pull-up |
+
+> **Note:** MicroSD cards require 3.3V logic, but most adapter modules include onboard voltage regulators and level shifters, allowing them to be powered with 5V.
 
 The LCD display and MPU6050 share the same I2C bus (PB10/SCL, PB11/SDA) with different addresses:
 
