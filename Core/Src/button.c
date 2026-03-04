@@ -88,12 +88,12 @@ static uint8_t Button_IsInCooldown(uint32_t cooldown_until)
   uint32_t current_time = TIMER2_GetMillis();
 
   if(cooldown_until == 0)
-    return 0;  // Not in cooldown
+    return 0;   // Not in cooldown
 
   if(current_time >= cooldown_until)
-    return 0;  // Cooldown expired
+    return 0;   // Cooldown expired
 
-  return 1;  // Still in cooldown
+  return 1;     // Still in cooldown
 }
 
 // EXTI0 Interrupt Handler

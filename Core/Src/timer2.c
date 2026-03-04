@@ -78,27 +78,3 @@ void TIMER2_Delay_ms(uint16_t ms)
   while((TIMER2_GetMillis() - start) < ms);
 }
 
-// For reference
-/*void TIMER2_Delay_ms(uint16_t ms)
- {
- // Stop timer if running
- TIM2->CR1 &= ~TIM_CR1_CEN;
-
- // Set auto-reload value
- TIM2->ARR = (uint16_t) (ms - 1) * 10;
-
- // Reset counter
- TIM2->CNT = 0;
-
- // Start timer
- TIM2->CR1 |= TIM_CR1_CEN;
-
- // Wait until counter reaches ARR
- while(!(TIM2->SR & TIM_SR_UIF));
-
- // Clear update flag
- TIM2->SR &= ~TIM_SR_UIF;
-
- // Stop timer
- TIM2->CR1 &= ~TIM_CR1_CEN;
- }*/

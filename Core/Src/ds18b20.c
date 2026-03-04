@@ -53,7 +53,7 @@ int DS18B20_Reset(void)
 
   // Set as input (release line), enable pull-up
   DS18B20_GPIO->CRL &= ~(GPIO_CRL_CNF0 | GPIO_CRL_MODE0);
-  DS18B20_GPIO->CRL |= GPIO_CRL_CNF0_1;  // Input with pull-up
+  DS18B20_GPIO->CRL |= GPIO_CRL_CNF0_1;     // Input with pull-up
   DS18B20_GPIO->ODR |= (1 << DS18B20_PIN);  // Pull-up enabled
 
   // Wait for sensor to respond with timeout

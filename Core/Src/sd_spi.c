@@ -8,8 +8,6 @@
 #include "sd_spi.h"
 #include "main.h"
 #include "timer2.h"
-#include <string.h>
-#include <stdio.h>
 
 extern SPI_HandleTypeDef hspi1;
 #define SD_SPI_HANDLE hspi1

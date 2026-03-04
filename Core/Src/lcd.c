@@ -6,7 +6,7 @@
  */
 
 #include "lcd.h"
-#include "timer2.h"  // For delays
+#include "timer2.h"
 #include "utils.h"
 
 // PCF8574 bits
@@ -193,8 +193,6 @@ void LCD_DisplayReading_Temp(uint8_t temp_int, uint8_t temp_dec, uint8_t hum_int
 // Display temperature
 void LCD_DisplayReading(float temp_ds18b20, float temp_mpu6050)
 {
-  // LINE 1: TEMP: XX.X C
-
   LCD_SetCursor(0, 0);
 
   LCD_SendString("TEMPmpu: ");

@@ -16,7 +16,7 @@
 #define SD_LOGGER_UNINIT    2
 #define SD_LOGGER_BUSY      3
 
-extern uint32_t entry_count;
+extern volatile uint32_t entry_count;
 
 // Initialize the SD data logger
 uint8_t SD_DataLogger_Init(void);
@@ -36,7 +36,7 @@ uint32_t SD_DataLogger_GetEntryCount(void);
 // Periodic task
 void Task_SD_DataLogger(void);
 
-// Deinitialize (unmount SD card)
+// Unmount SD card
 void SD_DataLogger_Deinit(void);
 
 #endif /* INC_SD_DATA_LOGGER_H_ */

@@ -14,14 +14,13 @@
 #include "uart.h"
 #include "utils.h"
 #include "tasks.h"
-#include "string.h"
 
-#define CSV_FILENAME        "test_data.csv"
+#define CSV_FILENAME        "saved_sensor_data.csv"
 #define CSV_HEADER          "Entry,DS18B20_C,MPU6050_C,DHT11_C,DHT11_%,AX_g,AY_g,AZ_g,GX_dps,GY_dps,GZ_dps\r\n"
 #define MAX_LINE_LENGTH     128
 
 static uint8_t initialized = 0;
-uint32_t entry_count = 0;
+volatile uint32_t entry_count = 0;
 
 // Structure to track logger state
 static struct
@@ -76,6 +75,7 @@ static void format_dht11_data(char **ptr, uint8_t integer_part, uint8_t decimal_
     *(*ptr)++ = *s++;
 }
 
+// Helper: for proper table formatting in UART
 static void print_fixed_width(float value, uint8_t width, uint8_t decimals)
 {
   char buffer[12];
@@ -94,6 +94,76 @@ static void print_fixed_width(float value, uint8_t width, uint8_t decimals)
 
   // Print the number
   USART1_SendString(buffer);
+}
+
+// Helper: String to float converter
+static float simple_atof(char *str)
+{
+  float result = 0.0f;
+  float fraction = 0.0f;
+  int sign = 1;
+  int i = 0;
+
+  // Handle sign
+  if(str[0] == '-')
+  {
+    sign = -1;
+    i = 1;
+  }
+
+  // Integer part
+  while(str[i] >= '0' && str[i] <= '9')
+  {
+    result = result * 10.0f + (str[i] - '0');
+    i++;
+  }
+
+  // Fraction part
+  if(str[i] == '.')
+  {
+    i++;
+    float divider = 10.0f;
+    while(str[i] >= '0' && str[i] <= '9')
+    {
+      fraction = fraction + (str[i] - '0') / divider;
+      divider *= 10.0f;
+      i++;
+    }
+  }
+
+  return sign * (result + fraction);
+}
+
+static char* csv_tokenize(char *str, char delimiter, char **next)
+{
+  if(str == NULL || *str == '\0')
+    return NULL;
+
+  // Skip leading delimiters
+  while(*str == delimiter)
+    str++;
+
+  if(*str == '\0')
+    return NULL;
+
+  char *token_start = str;
+
+  // Find end of token
+  while(*str && *str != delimiter && *str != '\r' && *str != '\n')
+    str++;
+
+  // If we found a delimiter or end of line
+  if(*str)
+  {
+    *str = '\0';  // Terminate the token
+    *next = str + 1;  // Point to next character
+  }
+  else
+  {
+    *next = NULL;  // End of string
+  }
+
+  return token_start;
 }
 
 // Initialize SD data logger
@@ -192,7 +262,7 @@ uint8_t SD_DataLogger_SaveEntry(void)
   char csv_line[MAX_LINE_LENGTH];
   char *ptr = csv_line;
 
-  // Entry number (instead of timestamp)
+  // Entry number
   print_csv_int(&ptr, entry_count + 1);  // Start from 1
   *ptr++ = ',';
 
@@ -253,45 +323,6 @@ uint8_t SD_DataLogger_SaveEntry(void)
   return SD_LOGGER_OK;
 }
 
-
-// Simple string to float converter
-static float simple_atof(char *str)
-{
-  float result = 0.0f;
-  float fraction = 0.0f;
-  int sign = 1;
-  int i = 0;
-
-  // Handle sign
-  if(str[0] == '-')
-  {
-    sign = -1;
-    i = 1;
-  }
-
-  // Integer part
-  while(str[i] >= '0' && str[i] <= '9')
-  {
-    result = result * 10.0f + (str[i] - '0');
-    i++;
-  }
-
-  // Fraction part
-  if(str[i] == '.')
-  {
-    i++;
-    float divider = 10.0f;
-    while(str[i] >= '0' && str[i] <= '9')
-    {
-      fraction = fraction + (str[i] - '0') / divider;
-      divider *= 10.0f;
-      i++;
-    }
-  }
-
-  return sign * (result + fraction);
-}
-
 // Read all data
 uint32_t SD_DataLogger_ReadAll(void)
 {
@@ -315,7 +346,7 @@ uint32_t SD_DataLogger_ReadAll(void)
     return 0;
   }
 
-  // Print beautiful table header (matching your flash logger style)
+  // Print beautiful table header
   USART1_SendString("\r\n");
   USART1_SendString(
       "+------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+\r\n");
@@ -330,24 +361,22 @@ uint32_t SD_DataLogger_ReadAll(void)
   // Read and parse each data line
   while(f_gets(line, sizeof(line), &file))
   {
-    // Remove newline characters
+    // Remove newline characters manually
     int len = 0;
     while(line[len] && line[len] != '\n' && line[len] != '\r')
       len++;
     line[len] = '\0';
 
-    // Parse CSV - tokenize the line
-    char *token;
+    // Parse CSV without strtok
     float values[11];
     int col = 0;
+    char *token;
+    char *next = line;
 
-    // Get first token
-    token = strtok(line, ",");
-    while(token != NULL && col < 11)
+    // Get tokens one by one
+    while(col < 11 && (token = csv_tokenize(next, ',', &next)) != NULL)
     {
-      // Convert string to float
       values[col] = simple_atof(token);
-      token = strtok(NULL, ",");
       col++;
     }
 
@@ -356,7 +385,7 @@ uint32_t SD_DataLogger_ReadAll(void)
     {
       data_line++;
 
-      // Print row with beautiful formatting
+      // Print row
       USART1_SendString("| ");
 
       // Entry number (width 4)
@@ -369,43 +398,43 @@ uint32_t SD_DataLogger_ReadAll(void)
       USART1_SendNumber(data_line);
       USART1_SendString(" | ");
 
-      // DS18B20 temperature (width 8)
+      // DS18B20 temperature
       print_fixed_width(values[1], 8, 2);
       USART1_SendString(" | ");
 
-      // MPU6050 temperature (width 8)
+      // MPU6050 temperature
       print_fixed_width(values[2], 8, 2);
       USART1_SendString(" | ");
 
-      // DHT11 temperature (width 8)
+      // DHT11 temperature
       print_fixed_width(values[3], 8, 1);
       USART1_SendString(" | ");
 
-      // DHT11 humidity (width 8)
+      // DHT11 humidity
       print_fixed_width(values[4], 8, 1);
       USART1_SendString(" | ");
 
-      // Accelerometer X (width 8)
+      // Accelerometer X
       print_fixed_width(values[5], 8, 3);
       USART1_SendString(" | ");
 
-      // Accelerometer Y (width 8)
+      // Accelerometer Y
       print_fixed_width(values[6], 8, 3);
       USART1_SendString(" | ");
 
-      // Accelerometer Z (width 8)
+      // Accelerometer Z
       print_fixed_width(values[7], 8, 3);
       USART1_SendString(" | ");
 
-      // Gyro X (width 8)
+      // Gyro X
       print_fixed_width(values[8], 8, 2);
       USART1_SendString(" | ");
 
-      // Gyro Y (width 8)
+      // Gyro Y
       print_fixed_width(values[9], 8, 2);
       USART1_SendString(" | ");
 
-      // Gyro Z (width 8)
+      // Gyro Z
       print_fixed_width(values[10], 8, 2);
       USART1_SendString(" | ");
 

@@ -142,9 +142,7 @@ int main(void)
 
   DWT_Delay_ms(2000);
 
-  uint8_t sd_init_result = SD_DataLogger_Init();
-
-  if(sd_init_result == SD_LOGGER_OK)
+  if(SD_DataLogger_Init() == SD_LOGGER_OK)
   {
     USART1_SendString("SD Logger ready!\r\n");
 
@@ -172,7 +170,7 @@ int main(void)
 
   DWT_Delay_ms(2000);
 
-  Button_Init(); // Initialize button after all system init
+  Button_Init(); // Initialize button after all system initialize
 
   // Setup TIM3 for 10ms control loop
   TIMER3_SetupPeriod(10);  // 10ms period

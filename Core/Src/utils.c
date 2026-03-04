@@ -10,7 +10,7 @@
 void itoa_32(uint32_t value, char *buffer)
 {
     char *ptr = buffer;
-    char temp[12];  // Enough for 32-bit number (max 10 digits + sign + null)
+    char temp[12];  // Enough for 32-bit number
     uint8_t i = 0;
 
     // Special case for zero

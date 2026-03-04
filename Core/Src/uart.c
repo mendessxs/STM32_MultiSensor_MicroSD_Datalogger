@@ -117,7 +117,7 @@ void USART1_SendChar(char c)
   // Write to TX buffer
   USART1_BufferWrite(&usart1_tx_buf, (uint8_t) c);
 
-  // ALWAYS enable TX interrupt (let handler disable when done)
+  // ALWAYS enable TX interrupt
   USART1->CR1 |= USART_CR1_TXEIE;
 
   __enable_irq();
