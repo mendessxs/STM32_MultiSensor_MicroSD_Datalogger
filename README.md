@@ -1,13 +1,24 @@
 # STM32 Multi Sensor MicroSD FatFs Datalogger Project
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/LICENSE)
 [![STM32](https://img.shields.io/badge/STM32-F103C8T6-blue)](https://www.st.com/en/microcontrollers-microprocessors/stm32f103c8.html)
 [![CubeIDE](https://img.shields.io/badge/IDE-STM32CubeIDE-darkblue)](http://st.com/en/development-tools/stm32cubeide.html)
-[![FatFS](https://img.shields.io/badge/FatFS-R0.15-green)](http://elm-chan.org/fsw/ff/00index_e.html)
+[![FatFS](https://img.shields.io/badge/FatFS-R0.15-darkgreen)](http://elm-chan.org/fsw/ff/00index_e.html)
+
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Video Demonstrations](#video-demonstrations)
+- [Hardware](#hardware-components)
+- [Task Scheduling](#task-scheduling)
+- [Drivers](#microsd-card--fatfs-driver)
+- [Data Logger](#data-logger-implementation)
+- [Getting Started](#getting-started)
+- [Resources](#related-projects)
+- [Contact](#contact)
 
 ## Project Overview
 
-The **STM32 Multi Sensor MicroSD Datalogger** Project is a comprehensive embedded system that reads data from multiple sensors and logs it to a `MicroSD card` in `CSV` format. The system features real-time display on a `16x2 LCD`, user interaction via push buttons, and data retrieval over UART serial communication.
+The **STM32 Multi Sensor MicroSD Datalogger** Project is a comprehensive embedded system that reads data from multiple sensors and logs it to a `MicroSD card` in `CSV` format.
 
 The system reads data from multiple sensors:
 - **DS18B20**: Digital temperature sensor (1-Wire)
@@ -16,7 +27,22 @@ The system reads data from multiple sensors:
 
 The data acquired from these sensors are saved into a MicroSD card in a file named `saved_sensor_data.csv` in CSV format using the `FatFS` file system.
 
-The data can be saved using a press of a button and retrieved and viewed through UART in a serial terminal in formatted table output. The data is also saved automatically every 5 seconds (currently disabled for demonstration purposes as button-based saving is easier to showcase).
+There are three ways to interact with the system:
+
+1. **16x2 LCD Display**: Shows real-time sensor data in three selectable modes:
+    - **Mode 1 (Temperature/Humidity)**: Displays DHT11 Temperature and Humidity
+    - **Mode 2 (Temperature)**: Displays both DS18B20 and MPU6050 temperatures
+    - **Mode 3 (Accelerometer)**: Shows X, Y, Z acceleration values
+    - **Mode 4 (Gyroscope)**: Shows X, Y, Z gyroscope values
+
+2. **Three Push Buttons**:
+   - **Button 1**: Switch between display modes
+   - **Button 2**: Save current sensor readings to SD Card
+   - **Button 3**: Retrieve and export all stored data via UART
+
+3. **UART Interface**: Export stored data in a formatted table for analysis on a PC
+
+The data is also saved automatically every 5 seconds (currently disabled for demonstration purposes as button-based saving is easier to showcase).
 
 The main control loop runs at a timing of 10ms, demonstrating real-time control and task scheduling without using an RTOS.
 
@@ -119,8 +145,8 @@ The system uses a **10ms timer-based control loop** with independent counters fo
 
 | Task | Frequency | Period | Execution |
 |------|-----------|--------|-----------|
-| **DHT11 Read** | 1 Hz | 1 seconds | Every 100 loops |
-| **DS18B20 Read** | 1 Hz | 1 seconds | Every 100 loops |
+| **DHT11 Read** | 1 Hz | 1 second | Every 100 loops |
+| **DS18B20 Read** | 1 Hz | 1 second | Every 100 loops |
 | **MPU6050 Read** | 20 Hz | 50 ms | Every 5 loops |
 | **LCD Update** | 10 Hz | 100 ms | Every 10 loops |
 | **UART Output** | 10 Hz | 100 ms | Every 10 loops |
@@ -148,7 +174,7 @@ The system uses a **10ms timer-based control loop** with independent counters fo
 
 The SD card interface handles all communication between the STM32 and the MicroSD card, from low-level SPI commands to high-level file operations.
 
-### Complete Custom Stack
+### Complete Stack
 ```
 Application Layer (sd_data_logger.c)
 ↓
@@ -182,17 +208,15 @@ Hardware (STM32 SPI1 + SD Card)
 - **Directory Operations** - Create folders, recursive listing with sizes
 - **Space Information** - Get free and total space in KB
 - **CSV Parsing** - Read and parse CSV files
-- **User Feedback** - Operation status over UART
 
-| Feature | Description |
-|---------|-------------|
-| **Auto-format** | If no filesystem, tries multiple sector sizes (512B → 4096B) |
-| **Data sync** | `f_sync()` after writes ensures data is written to card |
-| **SDHC/SDSC support** | Properly handles both card types |
-| **DMA transfers** | Block reads/writes with DMA |
-| **Timeout handling** | Uses TIMER2 for consistent timing |
-| **Error handling** | Return code checking and reporting |
-| **Directory listing** | Recursive listing with file sizes |
+### SD Card Data Format
+---
+Data is saved to `saved_sensor_data.csv` with the following format:
+
+```csv
+Entry,DS18B20_C,MPU6050_C,DHT11_C,DHT11_%,AX_g,AY_g,AZ_g,GX_dps,GY_dps,GZ_dps
+1,24.50,25.34,25.3,56.2,0.123,-0.011,0.987,0.52,-0.18,0.09
+```
 
 🔗 [View sd_spi.c - Low-Level Driver](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/Core/Src/sd_spi.c)<br>
 🔗 [View sd_diskio.c - FatFS Interface](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/Core/Src/sd_diskio.c) <br>
