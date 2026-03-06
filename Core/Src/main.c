@@ -223,13 +223,14 @@ int main(void)
     // Update UART output every 100ms
     if(uart_count++ >= UART_UPDATE_TICKS)
     {
-      // Task_UART_Output();
+      Task_UART_Output();
       uart_count = 0;
     }
 
     // Save data every 5 seconds
     if(sdcard_count++ >= SDCARD_SAVE_TICKS)  // 500 * 10ms = 5 seconds
     {
+      // Uncomment to enable 5 sec auto save
       // Task_SD_DataLogger();
       sdcard_count = 0;
     }

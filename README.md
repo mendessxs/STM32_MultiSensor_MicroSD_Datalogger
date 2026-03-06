@@ -29,7 +29,7 @@ The data acquired from these sensors are saved into a MicroSD card in a file nam
 
 There are three ways to interact with the system:
 
-1. **16x2 LCD Display**: Shows real-time sensor data in three selectable modes:
+1. **16x2 LCD Display**: Shows real-time sensor data in four selectable modes:
     - **Mode 1 (Temperature/Humidity)**: Displays DHT11 Temperature and Humidity
     - **Mode 2 (Temperature)**: Displays both DS18B20 and MPU6050 temperatures
     - **Mode 3 (Accelerometer)**: Shows X, Y, Z acceleration values
@@ -139,7 +139,7 @@ The LCD display and MPU6050 share the same I2C bus (PB10/SCL, PB11/SDA) with dif
 
 ## Task Scheduling
 
-The system uses a **10ms timer-based control loop** with independent counters for each task. TIMER3 is configured to drive the main control loop, ensuring precise and non-blocking task execution.
+The system uses a **10ms timer-based control loop** with independent counters for each task. TIMER3 is configured to drive the main control loop.
 
 ### Task Frequencies
 
@@ -150,7 +150,7 @@ The system uses a **10ms timer-based control loop** with independent counters fo
 | **MPU6050 Read** | 20 Hz | 50 ms | Every 5 loops |
 | **LCD Update** | 10 Hz | 100 ms | Every 10 loops |
 | **UART Output** | 10 Hz | 100 ms | Every 10 loops |
-| **Data Logger Task** | 0.2 Hz | 5 seconds | Every 500 loops |
+| **SD Data Logger Task** | 0.2 Hz | 5 seconds | Every 500 loops (uncomment in main loop)|
 | **Button Status Check** | 100 Hz | 10 ms | Every loop |
 | **Button Interrupts** | Event-driven | On press | EXTIx + TIM4 debounce |
 
@@ -168,7 +168,7 @@ The system uses a **10ms timer-based control loop** with independent counters fo
 🔗 [View TIMER3 Driver (10ms Heartbeat)](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/Core/Src/timer3.c)  
 🔗 [View Button & TIMER4 Driver (Debounce)](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/Core/Src/button.c)
 
-> **Note:** DWT (Data Watchpoint and Trace) is a built-in peripheral in ARM Cortex-M3 cores that provides a cycle counter running at CPU frequency (72MHz). This gives ~13.9ns resolution, making it ideal for generating precise microsecond delays required by the DS18B20 1-Wire protocol. Unlike traditional timer-based delays, DWT does not occupy a dedicated timer peripheral and continues running in the background.
+> **Note:** DWT (Data Watchpoint and Trace) is a built-in peripheral in ARM Cortex-M3 cores that provides a cycle counter running at CPU frequency (72MHz). This gives ~13.9ns resolution, making it ideal for generating precise microsecond delays required by the DS18B20 and DHT11 1-Wire protocol. Unlike traditional timer-based delays, DWT does not occupy a dedicated timer peripheral and continues running in the background.
 
 ## MicroSD Card & FatFS Driver
 
@@ -193,7 +193,6 @@ Hardware (STM32 SPI1 + SD Card)
 - Full SD protocol implementation (CMD0, CMD8, ACMD41, CMD17, CMD24, etc.)
 - SDHC/SDSC detection and handling
 - Single and multi-block read/write with DMA support
-- Timeout handling using TIMER2
 - CRC and error checking
 
 #### 2. **FatFS Hardware Interface (`sd_diskio.c`)**
@@ -221,10 +220,11 @@ Entry,DS18B20_C,MPU6050_C,DHT11_C,DHT11_%,AX_g,AY_g,AZ_g,GX_dps,GY_dps,GZ_dps
 🔗 [View sd_spi.c - Low-Level Driver](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/Core/Src/sd_spi.c)<br>
 🔗 [View sd_diskio.c - FatFS Interface](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/Core/Src/sd_diskio.c) <br>
 🔗 [View sd_functions.c - High-Level API](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/Core/Src/sd_functions.c) <br>
+🔗 [View sd_data_logger.c - Application Layer driver](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/Core/Src/sd_data_logger.c)
 
 ## MPU6050 IMU Driver
 
-The MPU6050 is a 6-axis motion tracking device with an **I2C interface** (shared with LCD at address 0x68).
+The MPU6050 is an 6-axis inertial measurement unit (IMU) with an **I2C interface** (shared with LCD at address 0x68).
 
 The driver provides two ways to read sensor data:
 1. **Raw Data**: Direct 16-bit integer values from registers (±32768 range)
@@ -243,9 +243,9 @@ The driver provides two ways to read sensor data:
 | **Gyroscope** | ±32768 | ±250 / ±500 / ±1000 / ±2000 | °/s (dps) |
 | **Temperature** | ±32768 | 340.0 per °C + 36.53 offset | °C |
 
-> **Note**: LCD display and SD Card logging use **scaled values** in physical units. Raw 16-bit values are available for custom calculations but stored separately.
-
 🔗 [View MPU6050 Driver Source Code](https://github.com/rubin-khadka/STM32_MultiSensor_MicroSD_Datalogger/blob/main/Core/Src/mpu6050.c)
+
+> **Note**: LCD display and SD Card logging use **scaled values** in physical units. Raw 16-bit values are stored in seperate structure and could be extracted if necessary. 
 
 ## DHT11 Sensor Driver
 
