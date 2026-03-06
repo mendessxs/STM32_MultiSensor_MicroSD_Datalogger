@@ -11,7 +11,6 @@
 - [Hardware](#hardware-components)
 - [Task Scheduling](#task-scheduling)
 - [Drivers](#microsd-card--fatfs-driver)
-- [Data Logger](#data-logger-implementation)
 - [Getting Started](#getting-started)
 - [Resources](#related-projects)
 - [Contact](#contact)
